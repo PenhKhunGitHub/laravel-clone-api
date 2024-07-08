@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\File;
 class PostController extends Controller
 {
     // Get All data from database
-    public static function index(){
+    public static function index(Request $request){
+        // $user_id = $request->user()->id;
+        // $posts = Post::where('user');
         $posts = Post::all();
         return response()->json(
             [
@@ -20,7 +22,7 @@ class PostController extends Controller
     }
     //Created data to database
     public static function store(Request $request){
-        //Checked validation 
+        //Checked validation
         $validated = $request->validate([
             'title' => 'required|max:255',
             'body' => 'required',
@@ -44,6 +46,7 @@ class PostController extends Controller
             ]
         );
     }
+    //Update data to database
     public static function update(Request $request,$id){
         $postId = Post::find($id);
         if(is_null($postId)){
@@ -55,15 +58,16 @@ class PostController extends Controller
                 ],404
             );
         }
-        if($request->hasFile('image')){
-            $image = $request->file('image');
-            $fileName = time().'.'.$image->getClientOriginalExtension();
-            $filePath = public_path('images/');
+
+        if($request->hasFile('image')){ //checked hasfile image ;'image'= key for client
+            $image = $request->file('image'); //get image from client
+            $fileName = time().'.'.$image->getClientOriginalExtension(); //radome name image
+            $filePath = public_path('images/'); //create folder 'images/' in public folder
             $image->move($filePath,$fileName);
-            if(!is_null($postId->image_url)){
-                $oldImage = public_path('images/'.$postId->image_url);
-                if(File::exists($oldImage)){
-                    unlink($oldImage);
+            if(!is_null($postId->image_url)){ //Checked image_url from database
+                $oldImage = public_path('images/'.$postId->image_url); //get public url in folder project
+                if(File::exists($oldImage)){ // checked file exists
+                    unlink($oldImage); // unlink url image in folder
                 }
             }
             $postId->image_url = $fileName;

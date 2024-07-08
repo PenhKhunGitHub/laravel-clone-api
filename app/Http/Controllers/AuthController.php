@@ -4,9 +4,19 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use PhpParser\Node\Expr\FuncCall;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
+    public static function getUserLogin(){
+        $user = User::all();
+        return response()->json(
+            [
+                'message' => 'all user login.',
+                'user' => $user
+            ]
+        );
+    }
     //Register User
     public static function register(Request $request){
         $request->validate([
@@ -34,16 +44,17 @@ class AuthController extends Controller
             'password' => 'required'
         ]);
 
-        if (!auth()->attempt($data)) {
+        if (!Auth()->attempt($data)) {
             return response(
                 [
-                    'error_message' => 'Incorrect Details. Please try again'
+                    'error_message' => 'Incorrect Details. Please try again',
                 ]
             );
         }
-        $token = auth()->user()->createToken('API Token')->accessToken;
-        return response(
-            ['user' => auth()->user(), 'token' => $token]
+        $user = Auth::user();
+        $accessToken = $user->createToken('authToken')->accessToken;
+        return response()->json(
+            ['user' => Auth::user(),'token'=> $accessToken]
         );
     }
     //Logout User
