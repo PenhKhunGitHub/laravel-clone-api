@@ -8,6 +8,12 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
+    public static function viewLogin(){
+        return view('authentications/sign_in');
+    }
+    public static function viewRegister(){
+        return view('authentications/sign_up');
+    }
     public static function getUserLogin(){
         $user = User::all();
         return response()->json(
@@ -38,24 +44,44 @@ class AuthController extends Controller
     }
     //Login User
     public static function login(Request $request){
-        //login user with passport
-        $data = $request->validate([
-            'email' => 'email|required',
-            'password' => 'required'
+        $request->validate([
+           'email' => 'required|string|email',
+           'password' => 'required|string',
         ]);
+        $credentials = request(['email', 'password']);
 
-        if (!Auth()->attempt($data)) {
-            return response(
-                [
-                    'error_message' => 'Incorrect Details. Please try again',
-                ]
-            );
-        }
-        $user = Auth::user();
-        $accessToken = $user->createToken('authToken')->accessToken;
-        return response()->json(
-            ['user' => Auth::user(),'token'=> $accessToken]
-        );
+        if (!Auth::attempt($credentials)) {
+            return response()->json([
+               'message' => 'Unauthorized'
+            ], 401);
+       }
+
+       $user = $request->user();
+       $tokenResult = $user->createToken('authToken')->accessToken;
+
+       return response()->json([
+          'user' => Auth::user(),
+          'access_token' => $tokenResult,
+          'token_type' => 'Bearer',
+       ]);
+        //login user with passport
+//         $data = $request->validate([
+//             'email' => 'email|required',
+//             'password' => 'required'
+//         ]);
+//
+//         if (!Auth()->attempt($data)) {
+//             return response(
+//                 [
+//                     'error_message' => 'Incorrect Details. Please try again',
+//                 ]
+//             );
+//         }
+//         $user = Auth::user();
+//         $accessToken = $user->createToken('authToken')->accessToken;
+//         return response()->json(
+//             ['user' => Auth::user(),'token'=> $accessToken]
+//         );
     }
     //Logout User
     public static function logout(Request $request){

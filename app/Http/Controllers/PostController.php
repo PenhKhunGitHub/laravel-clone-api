@@ -81,6 +81,7 @@ class PostController extends Controller
             ],200
         );
     }
+
     public static function destroy($id){
         $postId = Post::findOrFail($id);
         if(is_null($postId)){
