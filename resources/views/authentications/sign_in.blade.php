@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Form</title>
-
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/k7ujTnHg4C+6W2+g7qWl0zYAFq6TA3aAw5ob9t7JDEzTmSgPoxH3XYvK02Mv62CLp9YO8qdxr6gBg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Bootstrap and jQuery Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         html, body {
@@ -96,45 +99,52 @@
         <div class="text-center">
             <img src="{{('images/bbt-logo-removebg-preview.png')}}" alt="Logo" width="200">
         </div>
-        <form action="" method="post">
-            <div class="mb-3">
-                <input type="text" class="form-control" id="user_name" name="user_name" placeholder="Username" aria-describedby="inputGroupPrepend2" required>
-            </div>
-            <div class="mb-3">
-                <input type="password" class="form-control" id="password" name="password" placeholder="Password" aria-describedby="inputGroupPrepend2" required>
-                <i class="fas fa-eye toggle-password" id="togglePassword"></i>
-            </div>
-            <div class="mb-3">
-                <select class="form-select" id="lang" name="lang">
-                    <option value="english" selected>English</option>
-                    <option value="khmer">Khmer</option>
-                </select>
-            </div>
-            <div class="d-grid mb-3">
-                <button type="submit" class="btn btn-primary" id="login">Login</button>
-            </div>
-        </form>
+        <div class="mb-3">
+            <input type="text" class="form-control" id="user_name" name="user_name" placeholder="Username" aria-describedby="inputGroupPrepend2" required>
+        </div>
+        <div class="mb-3">
+            <input type="password" class="form-control" id="password" name="password" placeholder="Password" aria-describedby="inputGroupPrepend2" required>
+            <i class="fas fa-eye toggle-password" id="togglePassword"></i>
+        </div>
+        <div class="mb-3">
+            <select class="form-select" id="lang" name="lang">
+                <option value="english" selected>English</option>
+                <option value="khmer">Khmer</option>
+            </select>
+        </div>
+        <div class="d-grid mb-3">
+            <button class="btn btn-primary" id="login" onclick="loginUser()">Login</button>
+        </div>
     </div>
 </div>
 
-<!-- Bootstrap and jQuery Scripts -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://parsleyjs.org/dist/parsley.min.js"></script>
-
 <script type="text/javascript">
-    $(function () {
-        $('#loginform').parsley();
-        window.localStorage.clear();
-        $('#togglePassword').on('click', function () {
-            const passwordField = $('#password');
-            const type = passwordField.attr('type') === 'password' ? 'text' : 'password';
-            passwordField.attr('type', type);
 
-            // Toggle the icon
-            $(this).toggleClass('fa-eye fa-eye-slash');
-        });
+function loginUser() {
+    const name = $('#user_name').val();
+    const password = $('#password').val();
+
+    $.ajax({
+        url: '{{ route("login-user") }}',
+        type: 'POST',
+        data: {
+            _token: $('meta[name="csrf-token"]').attr('content'),
+            name: name,
+            password: password
+        },
+        success: function(response) {
+            window.location.href = '/home'; // Redirect after successful login
+        },
+        error: function(xhr) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Login Failed',
+                text: xhr.responseJSON.message
+            });
+        }
     });
+}
+
 </script>
 </body>
 </html>

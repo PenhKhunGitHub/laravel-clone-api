@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
+    public static function index(){
+       return view('home_page');
+    }
     public static function viewLogin(){
         return view('authentications/sign_in');
     }
@@ -33,7 +36,8 @@ class AuthController extends Controller
         $user = new User([
             'name' => $request->name,
             'email'=> $request->email,
-            'password' => bcrypt($request->password)
+            'password' => bcrypt($request->password),
+            'password_confirmation' => bcrypt($request->password),
         ]);
         $user->save();
         return response()->json(
@@ -44,44 +48,32 @@ class AuthController extends Controller
     }
     //Login User
     public static function login(Request $request){
-        $request->validate([
-           'email' => 'required|string|email',
-           'password' => 'required|string',
-        ]);
-        $credentials = request(['email', 'password']);
+        $credentials = $request->only('name', 'password');
+        if (Auth::attempt($credentials)) {
+            return response()->json(['message' => 'Login successful!'], 200);
+        }
 
-        if (!Auth::attempt($credentials)) {
-            return response()->json([
-               'message' => 'Unauthorized'
-            ], 401);
-       }
-
-       $user = $request->user();
-       $tokenResult = $user->createToken('authToken')->accessToken;
-
-       return response()->json([
-          'user' => Auth::user(),
-          'access_token' => $tokenResult,
-          'token_type' => 'Bearer',
-       ]);
-        //login user with passport
-//         $data = $request->validate([
-//             'email' => 'email|required',
-//             'password' => 'required'
+        return response()->json(['message' => 'Invalid credentials!'], 401);
+//         $request->validate([
+//            'email' => 'required|string|email',
+//            'password' => 'required|string',
 //         ]);
+//         $credentials = request(['email', 'password']);
 //
-//         if (!Auth()->attempt($data)) {
-//             return response(
-//                 [
-//                     'error_message' => 'Incorrect Details. Please try again',
-//                 ]
-//             );
-//         }
-//         $user = Auth::user();
-//         $accessToken = $user->createToken('authToken')->accessToken;
-//         return response()->json(
-//             ['user' => Auth::user(),'token'=> $accessToken]
-//         );
+//         if (!Auth::attempt($credentials)) {
+//             return response()->json([
+//                'message' => 'Unauthorized'
+//             ], 401);
+//        }
+//
+//        $user = $request->user();
+//        $tokenResult = $user->createToken('authToken')->accessToken;
+//
+//        return response()->json([
+//           'user' => Auth::user(),
+//           'access_token' => $tokenResult,
+//           'token_type' => 'Bearer',
+//        ]);
     }
     //Logout User
     public static function logout(Request $request){
